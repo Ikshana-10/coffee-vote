@@ -1,54 +1,15 @@
-require("dotenv").config();
-
-const express = require("express");
-const mongoose = require("mongoose");
-const Coffee = require("./models/Coffee");
-
-const app = express();
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
-
-app.set("view engine", "ejs");
-
-mongoose.connect("mongodb+srv://sherin38558_db_user:IKSHANA_123@coffeedb.tbutpzu.mongodb.net/?appName=CoffeeDB", {
-  family: 4,
+// Connect to MongoDB first, then start the server
+mongoose.connect(process.env.MONGO_URI, {
+  family: 4
 })
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
-
-
-// Home Page
-app.get("/", async (req, res) => {
-
-  let coffees = await Coffee.find();
-
-  if (coffees.length === 0) {
-
-    await Coffee.insertMany([
-      { name: "Espresso" },
-      { name: "Latte" },
-      { name: "Cappuccino" }
-    ]);
-
-    coffees = await Coffee.find();
-  }
-
-  res.render("index", { coffees });
-});
-
-
-// Vote Route
-app.post("/vote/:id", async (req, res) => {
-
-  await Coffee.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { votes: 1 } }
-  );
-
-  res.redirect("/");
-});
-
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Server Running");
+.then(() => {
+  console.log("MongoDB Connected Successfully! 🎉");
+  
+  // Server only starts listening after DB is ready
+  app.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is running on port ${process.env.PORT || 3000}`);
+  });
+})
+.catch(err => {
+  console.error("MongoDB Connection Error: ", err);
 });
