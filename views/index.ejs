@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coffee Rating Cafe</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>☕ Coffee Rating Café</h1>
+
+<div class="container">
+
+<% coffees.forEach(coffee => { %>
+
+<div class="card">
+
+<img src="https://source.unsplash.com/300x200/?coffee" alt="coffee">
+
+<h2><%= coffee.name %></h2>
+
+<h3>⭐ Votes: <%= coffee.votes %></h3>
+
+<form action="/vote/<%= coffee._id %>" method="POST">
+<button class="vote-btn">
+❤️ Vote
+</button>
+</form>
+
+</div>
+
+<% }) %>
+
+</div>
+
+</body>
+</html>
