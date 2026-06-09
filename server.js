@@ -11,9 +11,11 @@ app.use(express.static("public"));
 
 app.set("view engine", "ejs");
 
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+mongoose.connect("mongodb+srv://sherin38558_db_user:IKSHANA_123@coffeedb.tbutpzu.mongodb.net/?appName=CoffeeDB", {
+  family: 4,
+})
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
 
 
 // Home Page
