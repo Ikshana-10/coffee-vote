@@ -1,66 +1,62 @@
-// 1. Load Environment Variables First
-require("dotenv").config();
+const express = require('express');
+const path = require('path'); // Import path module
+const db = require('./database');
 
-// 2. Import All Required Packages
-const express = require("express");
-const mongoose = require("mongoose");
-const Coffee = require("./models/Coffee");
-
-// 3. Initialize the Express Application
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// 4. Set Up Middleware & View Engine
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
-app.set("view engine", "ejs");
+// Middleware to parse incoming JSON payloads
+app.use(express.json());
 
-// 5. App Routes
-// Home Page Route
-app.get("/", async (req, res) => {
-  try {
-    let coffees = await Coffee.find();
+// SERVE FRONTEND: Instruct Express to serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-    if (coffees.length === 0) {
-      await Coffee.insertMany([
-        { name: "Espresso" },
-        { name: "Latte" },
-        { name: "Cappuccino" }
-      ]);
-      coffees = await Coffee.find();
-    }
-
-    res.render("index", { coffees });
-  } catch (err) {
-    console.error("Error loading home page:", err);
-    res.status(500).send("Database Error");
-  }
+/**
+ * @route   GET /api/items
+ * @desc    Retrieve all items ordered by highest votes
+ */
+app.get('/api/items', (req, res) => {
+    db.all("SELECT * FROM items ORDER BY votes DESC", [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: "Database query error", details: err.message });
+        }
+        res.json({ success: true, data: rows });
+    });
 });
 
-// Vote Route
-app.post("/vote/:id", async (req, res) => {
-  try {
-    await Coffee.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { votes: 1 } }
+/**
+ * @route   POST /api/vote/:id
+ * @desc    Increment the vote count for a specific item ID
+ */
+app.post('/api/vote/:id', (req, res) => {
+    const itemId = req.params.id;
+
+    db.run(
+        "UPDATE items SET votes = votes + 1 WHERE id = ?",
+        [itemId],
+        function (err) {
+            if (err) {
+                return res.status(500).json({ error: "Database update error", details: err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ success: false, error: `Item with ID ${itemId} not found.` });
+            }
+
+            db.get("SELECT * FROM items WHERE id = ?", [itemId], (err, row) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json({
+                    success: true,
+                    message: "Vote cast successfully",
+                    updatedItem: row
+                });
+            });
+        }
     );
-    res.redirect("/");
-  } catch (err) {
-    console.error("Error casting vote:", err);
-    res.status(500).send("Voting Error");
-  }
 });
 
-// 6. Connect to MongoDB, THEN Start Listening
-mongoose.connect(process.env.MONGO_URI, {
-  family: 4
-})
-.then(() => {
-  console.log("MongoDB Connected Successfully! 🎉");
-  
-  app.listen(process.env.PORT || 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3000}`);
-  });
-})
-.catch(err => {
-  console.error("MongoDB Connection Error: ", err);
+// Start Server
+app.listen(PORT, () => {
+    console.log(`Backend API server running on http://localhost:${PORT}`);
 });

@@ -1,19 +1,25 @@
 {
-  "name": "coffee-rating-app",
+  "name": "coffee-voting-app",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "database.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikshana-10/coffee-vote.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ikshana-10/coffee-vote/issues"
+  },
+  "homepage": "https://github.com/ikshana-10/coffee-vote#readme",
   "dependencies": {
-    "dotenv": "^17.4.2",
-    "ejs": "^6.0.1",
     "express": "^5.2.1",
-    "mongoose": "^9.6.3"
+    "sqlite3": "^6.0.1"
   }
 }
